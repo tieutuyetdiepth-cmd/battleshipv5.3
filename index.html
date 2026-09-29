@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05111b">
+<title>BattleShip V5.3 — 8-bit Pixel Fleet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+:root{
+ --bg:#03111b;--bg2:#072438;--panel:#082536;--panel-2:#0b3043;--line:#3fdcf4;--line-2:#1a89b2;
+ --text:#effcff;--muted:#a7d9e5;--yellow:#ffe266;--orange:#ffb449;--red:#ff5d68;--green:#76f59a;--blue:#4ccfff;
+ --sea-a:#0a4464;--sea-b:#0b6a93;--sea-c:#08324d;--shadow:6px 6px 0 #000c13;--font-ui:'Pixelify Sans','Be Vietnam Pro',system-ui,sans-serif;--font-logo:'Press Start 2P','Pixelify Sans',monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui)}
+body{overflow-x:hidden;background:
+ linear-gradient(180deg,rgba(24,119,161,.18) 0, transparent 20%),
+ repeating-linear-gradient(0deg,rgba(70,201,239,.07) 0 2px,transparent 2px 7px),
+ linear-gradient(180deg,#07253a,#03111b 62%,#01070b)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.4;background:
+ radial-gradient(circle at 8% 18%,#46e4ff 0 2px,transparent 3px),
+ radial-gradient(circle at 76% 20%,#46e4ff 0 1px,transparent 2px),
+ radial-gradient(circle at 34% 78%,#46e4ff 0 2px,transparent 3px),
+ radial-gradient(circle at 84% 64%,#46e4ff 0 1px,transparent 2px);
+ background-size:160px 130px,210px 170px,170px 150px,220px 180px;animation:stars 18s linear infinite}
+@keyframes stars{to{background-position:85px 110px,-60px 90px,70px -60px,-80px 60px}}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:1220px;margin:auto;padding:16px 12px 42px}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.logo{font-family:var(--font-logo);font-size:clamp(22px,4.3vw,42px);line-height:1.25;letter-spacing:-1px;color:#fff;text-shadow:4px 0 #1a78b0,0 4px #0a4768,4px 4px #02131d}
+.logo small{display:block;font-family:var(--font-ui);font-size:14px;letter-spacing:3px;color:#89f1ff;margin-top:8px;text-shadow:none;font-weight:700}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill,.badge,.chip{border:3px solid #07161f;outline:2px solid var(--line-2);background:#0b2a3a;box-shadow:4px 4px 0 #000f18;color:#d8fdff;font-weight:800;border-radius:0}
+.pill{padding:10px 13px;font-size:14px}
+.badge,.chip{padding:7px 10px;font-size:13px}
+.chip.me{outline-color:#41c86a}.chip.enemy{outline-color:#ff6977}
+.btn{border:3px solid #07161f;outline:2px solid #5ae8ff;background:#145473;color:#fff;padding:11px 14px;border-radius:0;box-shadow:4px 4px 0 #001018;font-weight:800;font-size:14px;transition:transform .08s, box-shadow .08s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 #001018}.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #001018}.btn:disabled{opacity:.5;filter:grayscale(.85);cursor:not-allowed}
+.primary{background:#1a85d2}.secondary{background:#175b72}.ghost{background:#103a50}.danger{background:#8c3749;outline-color:#ff7f8a}
+.card{position:relative;background:var(--panel);border:4px solid #05131c;outline:2px solid #2787aa;box-shadow:8px 8px 0 rgba(0,0,0,.5)}
+.card:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:repeating-linear-gradient(90deg,#57efff 0 12px,#1d6278 12px 24px)}
+.pad{padding:18px}.hidden{display:none!important}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}.arena{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:900px){.grid2{grid-template-columns:1.05fr .95fr}}
+@media(min-width:960px){.arena{grid-template-columns:1fr 1fr}}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.stack{display:grid;gap:12px}
+input{width:100%;min-width:0;padding:13px 12px;background:#031823;border:3px solid #07141c;outline:2px solid #205d75;color:#fff;box-shadow:inset 3px 3px 0 #001018;font-size:16px}
+input:focus{outline-color:#67ecff}
+.label{font-size:12px;letter-spacing:2px;color:#6cecff;text-transform:uppercase;font-weight:700}
+.h1{font-size:clamp(21px,3vw,34px);line-height:1.15;margin:2px 0 0;font-weight:800}
+.muted{font-size:15px;line-height:1.45;color:var(--muted);font-weight:500}
+.notice{padding:12px;border:3px solid #06131c;outline:2px solid #1a647e;background:#061b28;display:flex;gap:10px;align-items:flex-start}
+.statusdot{width:10px;height:10px;background:#64ecff;border:2px solid #001923;box-shadow:0 0 0 2px #1a7898;margin-top:5px;flex:0 0 auto}
+.roomcode{font-size:18px;font-weight:800;color:#ffe972;letter-spacing:1px}.playerchips{display:flex;gap:9px;flex-wrap:wrap}
+.gamehead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.boardcard{overflow:visible;background:#062231}.boardtop{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.boardtitle{font-size:20px;font-weight:700}
+.setupTools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 6px}
+.setupHint{padding:8px 12px;border:3px solid #06151f;outline:2px solid #1d6b86;background:#071d2b;color:#c8f9ff;font-size:14px;font-weight:600}
+.shiplist{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:620px){.shiplist{grid-template-columns:repeat(2,1fr)}}
+.shipitem{padding:12px;border:3px solid #06131c;outline:2px solid #1a647e;background:#061b28}.shipitem.active{outline-color:#ffe45e}.shipitem.done{opacity:.5}.shiphead{display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:700}.blocks{display:flex;gap:3px;margin-top:9px}.blocks i{display:block;height:12px;flex:1;background:#b3c0c9;border-top:3px solid #eaf3f7;border-bottom:3px solid #52636d}
+.boardwrap{position:relative;overflow:auto;padding:9px;background:
+ linear-gradient(180deg,rgba(103,241,255,.12),transparent 30%),
+ linear-gradient(135deg,#06283f,#07344f 50%,#041f30),
+ repeating-linear-gradient(45deg,#06283f 0 7px,#08314c 7px 14px);
+ border:3px solid #00131d;outline:2px solid #1a80a4;box-shadow:inset 0 0 0 3px #0b4664}
+.boardwrap:before{content:"";position:absolute;inset:9px;pointer-events:none;background:
+ radial-gradient(circle at 18% 28%,rgba(255,255,255,.07),transparent 26%),
+ radial-gradient(circle at 78% 18%,rgba(123,246,255,.1),transparent 24%),
+ radial-gradient(circle at 63% 74%,rgba(255,255,255,.04),transparent 21%);mix-blend-mode:screen}
+.board{position:relative;display:grid;grid-template-columns:32px repeat(10,minmax(26px,1fr));grid-template-rows:32px repeat(10,minmax(26px,1fr));width:min(100%,560px);aspect-ratio:1;margin:auto;gap:2px}
+.axis{display:flex;align-items:center;justify-content:center;color:#fff0a6;font-size:16px;font-weight:800;font-family:var(--font-logo);text-shadow:2px 2px #011018,0 0 8px rgba(122,240,255,.35);background:linear-gradient(180deg,rgba(17,74,97,.96),rgba(8,41,58,.96));border:2px solid #0a3146;box-shadow:inset 0 0 0 1px rgba(135,243,255,.18)}
+.cell{position:relative;border:2px solid #0a3650;cursor:pointer;background:
+ linear-gradient(180deg,rgba(255,255,255,.1),transparent 35%),
+ radial-gradient(circle at 22% 24%,rgba(255,255,255,.08) 0 2px,transparent 3px),
+ radial-gradient(circle at 70% 78%,rgba(118,237,255,.08) 0 1px,transparent 2px),
+ linear-gradient(135deg,var(--sea-b),var(--sea-a) 48%,var(--sea-c));box-shadow:inset 0 0 0 1px rgba(144,241,255,.06)}
+.cell:hover{filter:brightness(1.1)}
+.cell.ship{background:
+ linear-gradient(180deg,rgba(255,255,255,.08),transparent 30%),
+ linear-gradient(135deg,#1b6285,#0f4c6e 52%,#0a3550)}
+.cell.targetable{outline:3px solid #91efff;z-index:6;animation:blink 1.9s ease-in-out infinite;box-shadow:0 0 0 1px rgba(145,239,255,.08)}@keyframes blink{0%,100%{outline-color:#91efff;box-shadow:0 0 0 1px rgba(145,239,255,.05)}50%{outline-color:#ffe9a0;box-shadow:0 0 10px rgba(255,233,160,.18)}}
+.cell.preview-ok{outline:3px solid #63f57e;z-index:6}.cell.preview-bad{outline:3px solid #ff5d68;z-index:6}
+.cell.miss:after,.cell.hit:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12}
+.cell.miss:after{width:6px;height:6px;background:#eafcff;box-shadow:-6px 0 #8fefff,6px 0 #8fefff,0 -6px #8fefff,0 6px #8fefff}
+.cell.hit:after{width:9px;height:9px;background:#fff06a;box-shadow:-8px 0 #ff8b4d,8px 0 #ff8b4d,0 -8px #ff8b4d,0 8px #ff8b4d,-8px -8px #ff4458,8px 8px #ff4458}
+.cell.sunk{background:#471421!important}.burning-cell{box-shadow:inset 0 0 0 3px #7a1f21!important}
+.shipUnit{position:absolute;z-index:8;pointer-events:none}.shipUnit svg{display:block;width:100%;height:100%;image-rendering:pixelated;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.35))}.shipUnit.wreck svg{filter:grayscale(.35) sepia(.15) brightness(.72) drop-shadow(2px 3px 0 rgba(0,0,0,.35))}
+.shipUnit .flame{position:absolute;bottom:18%;width:16px;height:18px;background:#fff36a;box-shadow:-4px 5px #ffad34,4px 5px #ffad34,0 -7px #ff6e37,-4px -2px #ff4154,4px -2px #ff4154;animation:fire .55s steps(2) infinite}
+.shipUnit .f1{left:18%}.shipUnit .f2{left:50%;transform:translateX(-50%);animation-delay:-.2s}.shipUnit .f3{right:18%;animation-delay:-.35s}
+@keyframes fire{50%{transform:translateY(-3px) scale(.9)}100%{transform:translateY(-6px) scale(.8);opacity:.8}}
+.shipSilhouette{opacity:.15}
+.scorebar{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(min-width:900px){.scorebar{grid-template-columns:repeat(5,1fr)}}
+.kpi{padding:12px;border:3px solid #06131c;outline:2px solid #155d77;background:#061b27}.kpi span{display:block;font-size:12px;color:#96dbe9;font-weight:700}.kpi b{display:block;font-size:28px;margin-top:2px;color:#ffe66a;font-weight:800;line-height:1}
+.turnhero{padding:15px;border:3px solid #06131c;outline:2px solid #177895;background:#061b27}.turnbig{font-size:clamp(24px,3.8vw,40px);line-height:1.1;color:#fff;font-weight:800}.seriesLine{margin-top:8px;color:#80efff;font-size:14px;font-weight:700}
+.radar{position:relative;width:112px;height:112px;border:5px solid #06131c;outline:3px solid #34e6f5;background:repeating-radial-gradient(circle,#061824 0 10px,#0d3d49 11px 12px,#061824 13px 20px);overflow:hidden;flex:0 0 auto}.radar:before{content:"";position:absolute;left:50%;top:50%;width:46%;height:4px;background:#5cff8c;transform-origin:left;animation:sweep 2s steps(16) infinite}.radar:after{content:"";position:absolute;left:28%;top:24%;width:5px;height:5px;background:#ffe65c;box-shadow:35px 26px #ff6a5b,52px 54px #63f3ff}@keyframes sweep{to{transform:rotate(360deg)}}
+.fxlayer{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}.pixelMissile{position:absolute;width:8px;height:24px;background:#f0fcff;border:2px solid #07131c;box-shadow:0 6px #ffb23f,0 10px #ff643c,0 14px #ffe66a;z-index:65}.pixelExplosion{position:absolute;z-index:66;width:10px;height:10px;background:#fff86a;box-shadow:-10px 0 #ffb23f,10px 0 #ffb23f,0 -10px #fff86a,0 10px #ff7842,-20px 0 #ff4154,20px 0 #ff4154,0 -20px #ff7842,0 20px #ff4154;transform:translate(-50%,-50%);animation:boom .45s steps(4) forwards}.pixelSplash{position:absolute;z-index:66;width:6px;height:6px;background:#efffff;box-shadow:-7px 0 #6be7f6,7px 0 #6be7f6,0 -7px #6be7f6,0 7px #6be7f6,-12px -5px #8ff6ff,12px -5px #8ff6ff;transform:translate(-50%,-50%);animation:splash .5s steps(4) forwards}
+@keyframes boom{0%{transform:translate(-50%,-50%) scale(.5)}70%{transform:translate(-50%,-50%) scale(2.2)}100%{transform:translate(-50%,-50%) scale(3.1);opacity:0}}@keyframes splash{0%{transform:translate(-50%,-50%) scale(.45)}70%{transform:translate(-50%,-50%) scale(1.8)}100%{transform:translate(-50%,-70%) scale(2.4);opacity:0}}
+.sunkFlash{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:75;color:#fff45a;background:#7c1f28;border:4px solid #15070a;outline:3px solid #ff6a50;padding:12px 16px;box-shadow:8px 8px 0 #12060a;font-size:clamp(20px,3vw,30px);line-height:1.15;text-align:center;font-weight:800;animation:banner 1.5s steps(5) forwards}
+@keyframes banner{0%{opacity:0;transform:translate(-50%,-18px) scale(.84)}16%,70%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,0) scale(1.08)}}
+.shake{animation:shake .3s steps(4)}@keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+.modal{position:fixed;inset:0;background:rgba(1,7,11,.88);z-index:80;display:flex;align-items:center;justify-content:center;padding:18px}.modalbox{width:min(92vw,560px);padding:27px;border:5px solid #07131b;outline:3px solid #2cd9ef;background:#082332;box-shadow:10px 10px 0 #000;text-align:center}.resulticon{font-size:66px;line-height:1}.resulttitle{font-size:clamp(28px,4vw,42px);line-height:1.1;margin-top:7px;color:#ffe65c;font-weight:800}
+.toastwrap{position:fixed;right:14px;bottom:14px;z-index:90;display:grid;gap:10px;max-width:min(92vw,400px)}.toast{padding:12px 14px;border:3px solid #061018;outline:2px solid #2bd8ed;background:#082534;box-shadow:5px 5px 0 #001018;font-weight:700;animation:toast .2s steps(3)}@keyframes toast{from{opacity:0;transform:translateY(8px)}}
+.footer{text-align:center;color:#75a1af;font-size:13px;padding-top:18px}
+@media(max-width:560px){.app{padding:10px 8px 28px}.pad{padding:13px}.btn{padding:10px 10px;font-size:13px}.radar{width:88px;height:88px}.boardwrap{padding:6px}.board{grid-template-columns:22px repeat(10,minmax(24px,1fr));grid-template-rows:22px repeat(10,minmax(24px,1fr))}.axis{font-size:12px}.turnbig{font-size:22px}.kpi b{font-size:22px}.h1{font-size:22px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+/* ===== V5.1 NAVAL SKIN ===== */
+.hero{padding:10px 12px;border:3px solid #06151f;outline:2px solid #155f7b;background:
+ linear-gradient(180deg,rgba(28,106,145,.24),rgba(4,25,38,.5));
+ box-shadow:5px 5px 0 rgba(0,8,13,.45)}
+.hero:before,.hero:after{content:"";width:7px;height:7px;background:#9fd4dc;border:2px solid #263b40;box-shadow:0 0 0 1px #d5f4f6}
+.hero:before{position:absolute;left:7px;top:7px}.hero{position:relative}.hero:after{position:absolute;right:7px;bottom:7px}
+.card{background:
+ linear-gradient(180deg,rgba(14,58,78,.18),transparent 26%),
+ var(--panel)}
+.card:after{content:"";position:absolute;inset:7px;pointer-events:none;border:1px dashed rgba(101,204,228,.1)}
+.boardwrap{box-shadow:inset 0 0 0 3px #0b4664,inset 0 18px 26px rgba(73,214,247,.04)}
+.boardwrap .board:before{content:"";position:absolute;inset:32px 0 0 32px;pointer-events:none;z-index:0;background:
+ radial-gradient(circle at 12% 20%,rgba(127,240,255,.11) 0 1px,transparent 2px),
+ radial-gradient(circle at 82% 36%,rgba(127,240,255,.10) 0 1px,transparent 2px),
+ radial-gradient(circle at 44% 80%,rgba(127,240,255,.08) 0 1px,transparent 2px);
+ background-size:47px 41px,61px 53px,73px 61px}
+.shipitem{position:relative;padding-left:105px;min-height:62px}
+.shipPreview{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:85px;height:40px}
+.shipPreview svg{width:100%;height:100%;display:block;image-rendering:pixelated;filter:drop-shadow(2px 2px 0 #001018)}
+.shipTypeTag{font-size:11px;color:#77e9ff;margin-top:3px;font-weight:600}
+.pixelRipple{position:absolute;z-index:67;width:16px;height:16px;border:4px solid #e6ffff;border-radius:50%;
+ transform:translate(-50%,-50%) scale(.24);box-shadow:0 0 0 4px rgba(81,222,246,.55),0 0 0 12px rgba(81,222,246,.18),0 0 22px rgba(111,240,255,.22);
+ animation:ripple .68s ease-out forwards}
+@keyframes ripple{60%{transform:translate(-50%,-50%) scale(2.9);opacity:1}100%{transform:translate(-50%,-50%) scale(4.1);opacity:0}}
+.sonarPing{position:absolute;inset:0;pointer-events:none;border:2px solid rgba(91,237,255,.0)}
+.cell.targetable:hover{background:
+ linear-gradient(180deg,rgba(255,239,117,.13),transparent 40%),
+ linear-gradient(135deg,var(--sea-b),var(--sea-a) 48%,var(--sea-c))}
+.shipUnit{filter:saturate(1.08)}
+.shipUnit.wreck{opacity:.94}
+@media(max-width:560px){
+ .shipitem{padding-left:88px}
+ .shipPreview{width:70px;height:34px;left:8px}
+ .shipUnit .f3{display:none}
+ .hero{padding:9px}
+ .board{grid-template-columns:24px repeat(10,minmax(24px,1fr));grid-template-rows:24px repeat(10,minmax(24px,1fr));width:min(100%,100%)}
+ .axis{font-size:12px}
+ .boardwrap .board:before{inset:24px 0 0 24px}
+}
+
+
+.cell .hitPartMark{
+ position:absolute;z-index:18;right:2px;top:2px;min-width:16px;height:16px;padding:0 3px;
+ display:flex;align-items:center;justify-content:center;
+ font-family:var(--font-logo);font-size:7px;line-height:1;color:#031018;background:#8ff4ff;
+ border:2px solid #02131c;box-shadow:2px 2px 0 #000c13
+}
+.cell .hitPartMark.stern{background:#ff9cd0}
+.cell.hit-bow{box-shadow:inset 0 0 0 3px rgba(111,238,255,.65)}
+.cell.hit-stern{box-shadow:inset 0 0 0 3px rgba(255,143,203,.62)}
+.partHitFx{
+ position:fixed;z-index:76;transform:translate(-50%,-50%);
+ font-family:var(--font-logo);font-size:12px;color:#061018;padding:8px 10px;
+ border:3px solid #061018;box-shadow:4px 4px 0 #001018;pointer-events:none;
+ animation:partPop .85s steps(5) forwards
+}
+.partHitFx.bow{background:#8ff4ff}.partHitFx.stern{background:#ff9cd0}
+@keyframes partPop{0%{opacity:0;transform:translate(-50%,-30%) scale(.7)}20%,70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(.9)}}
+.missFlag{
+ position:absolute;z-index:17;left:50%;top:50%;width:3px;height:18px;background:#e7f7fb;
+ transform:translate(-50%,-68%);box-shadow:1px 0 #17333e
+}
+.missFlag:before{
+ content:"";position:absolute;left:3px;top:1px;width:10px;height:7px;background:#ff5a64;
+ clip-path:polygon(0 0,100% 22%,72% 100%,0 82%);box-shadow:inset 0 -2px #a92334
+}
+.missFlag:after{
+ content:"";position:absolute;left:-3px;bottom:-2px;width:9px;height:3px;background:#ffd85e
+}
+.sunkFlash.enemySunk{background:#1c6b51;outline-color:#71f3a3;color:#fff6a8}
+.sunkFlash.ownSunk{background:#7c1f28;outline-color:#ff6a50;color:#fff2f2}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="hero">
+    <div class="logo">BATTLESHIP V5.3<small>PIXEL NAVAL DUEL</small></div>
+    <div class="topbar">
+      <div class="pill">DESIGNED BY MINN</div><div class="pill" id="netBadge">NOT CONNECTED</div>
+      <button class="btn ghost" id="soundBtn">🔊 SOUND</button>
+    </div>
+  </div>
+
+  <section class="card" id="lobby">
+    <div class="pad grid2">
+      <div class="stack">
+        <div>
+          <div class="label">Lobby</div>
+          <div class="h1">CREATE 1V1 • PIXEL WAR</div>
+          <div class="muted">Room host fires first. Hit = fire again; miss = turn changes.</div>
+        </div>
+        <input id="playerName" maxlength="18" placeholder="Your name (e.g. Minn)">
+        <div class="row">
+          <button class="btn primary" id="createBtn">⚓ CREATE ROOM</button>
+          <input id="roomInput" maxlength="8" placeholder="Room code">
+          <button class="btn secondary" id="joinBtn">JOIN ROOM</button>
+        </div>
+        <div id="roomBox" class="stack hidden">
+          <div class="notice"><span class="statusdot"></span><div><b>ROOM CODE</b><div class="roomcode" id="roomCode">—</div></div></div>
+          <div class="row"><input id="shareLink" readonly><button class="btn secondary" id="copyBtn">COPY LINK</button></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="notice"><span class="statusdot"></span><div><b>STATUS</b><div class="muted" id="lobbyMsg">Create a new room or enter a room code.</div></div></div>
+        <div class="playerchips">
+          <div class="chip me">🟢 YOU: <span id="meName">PLAYER 1</span></div>
+          <div class="chip enemy">🔴 OPPONENT: <span id="enemyName">WAITING</span></div>
+        </div>
+        <div class="notice"><span class="statusdot"></span><div><b>Tip</b><div class="muted">Once hosted on Netlify/Vercel/GitHub Pages, invite links work between two devices over the Internet.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="setup">
+    <div class="pad">
+      <div class="gamehead">
+        <div>
+          <div class="label">Fleet setup</div>
+          <div class="h1">DEPLOY FLEET</div>
+          <div class="muted" id="setupMsg">Deploy all 5 ships, then press READY.</div>
+        </div>
+        <div class="row">
+          <span class="badge" id="orientation">HORIZONTAL</span>
+          <span class="badge" id="readyLabel">NOT READY</span>
+        </div>
+      </div>
+      <div class="setupTools">
+        <button class="btn secondary" id="rotateBtn">↻ ROTATE SHIP</button>
+        <button class="btn secondary" id="randomBtn">🎲 RANDOMIZE</button>
+        <button class="btn danger" id="clearBtn">CLEAR ALL</button>
+        <button class="btn primary" id="readyBtn" disabled>✅ READY</button>
+      </div>
+      <div class="setupHint">Tip: tap a placed ship to pick it up → rotate if needed → tap a new position to place it.</div>
+      <div class="arena" style="margin-top:16px">
+        <div class="card boardcard"><div class="pad"><div class="boardwrap"><div class="board" id="setupBoard"></div></div></div></div>
+        <div class="stack"><div class="shiplist" id="shipList"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hidden" id="game">
+    <section class="card">
+      <div class="pad">
+        <div class="gamehead">
+          <div class="turnhero" style="flex:1;min-width:260px">
+            <div class="label">Battle status</div>
+            <div class="turnbig" id="turnText">WAITING…</div>
+            <div class="muted" id="gameMsg">Prepare for battle.</div>
+            <div class="seriesLine" id="seriesLine">SERIES: PLAYER 1 0 - 0 PLAYER 2</div>
+          </div>
+          <div class="radar" aria-label="Radar animation"></div>
+        </div>
+        <div class="scorebar" style="margin-top:12px">
+          <div class="kpi"><span>YOUR SHIPS</span><b id="myRemain">5</b></div>
+          <div class="kpi"><span>ENEMY SHIPS</span><b id="enemyRemain">5</b></div>
+          <div class="kpi"><span>ACCURACY</span><b id="accuracy">0%</b></div>
+          <div class="kpi"><span>SHOTS</span><b id="turnCount">0</b></div>
+          <div class="kpi"><span>SERIES</span><b id="seriesScore">0 - 0</b></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="arena" style="margin-top:16px">
+      <section class="card boardcard">
+        <div class="pad">
+          <div class="boardtop"><div class="boardtitle">🛡️ YOUR FLEET</div><span class="badge">DEFENSE</span></div>
+          <div class="boardwrap"><div class="board" id="myBoard"></div></div>
+        </div>
+      </section>
+      <section class="card boardcard">
+        <div class="pad">
+          <div class="boardtop"><div class="boardtitle">🎯 ENEMY WATERS</div><span class="badge">FIRE</span></div>
+          <div class="boardwrap"><div class="board" id="enemyBoard"></div></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <div class="footer">BATTLESHIP V5.3 • ONLINE MQTT • HIT = EXTRA SHOT • DESIGNED BY MINN</div>
+</div>
+
+<div class="fxlayer" id="fx"></div>
+<div class="toastwrap" id="toasts"></div>
+
+<div class="modal hidden" id="resultModal">
+  <div class="modalbox">
+    <div class="resulticon" id="resultIcon">🏆</div>
+    <div class="resulttitle" id="resultTitle">VICTORY!</div>
+    <div class="muted" id="resultSub">You destroyed the entire enemy fleet.</div>
+    <div class="muted" id="seriesNote" style="margin-top:10px;font-weight:700;color:#88efff">SERIES: PLAYER 1 0 - 0 PLAYER 2</div>
+    <div class="row" style="justify-content:center;margin-top:18px">
+      <button class="btn primary" id="rematchBtn">🔁 REMATCH</button>
+      <button class="btn secondary" id="closeResultBtn">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+<script>
+(()=>{
+const SHIPS=[
+ {id:'carrier',name:'Carrier',size:5,type:'Aircraft Carrier'},
+ {id:'battleship',name:'Battleship',size:4,type:'Heavy Gunship'},
+ {id:'cruiser',name:'Cruiser',size:3,type:'Fast Cruiser'},
+ {id:'submarine',name:'Submarine',size:3,type:'Attack Submarine'},
+ {id:'destroyer',name:'Destroyer',size:2,type:'Fast Destroyer'}
+];
+const $=s=>document.querySelector(s), letters='ABCDEFGHIJ';
+const state={
+ role:null,room:null,client:null,myId:'p_'+Math.random().toString(36).slice(2,9),
+ connected:false,me:'PLAYER 1',enemy:'OPPONENT',
+ orientation:'h',placements:[],editingShip:null,ready:false,enemyReady:false,
+ started:false,myTurn:false,myShots:{},enemyShots:{},enemySunkShips:{},over:false,sound:true,turnCount:0,bonusShot:false,
+ seriesWins:0,seriesLosses:0
+};
+let heartbeatTimer=null,joinTimer=null;
+function key(r,c){return r+'-'+c}
+function code(){const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=ch[Math.floor(Math.random()*ch.length)];return s}
+function show(el,on=true){el.classList.toggle('hidden',!on)}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3000)}
+function setNet(t){$('#netBadge').textContent=t}
+function nameNow(){const n=$('#playerName').value.trim().slice(0,18);state.me=n||'PLAYER 1';$('#meName').textContent=state.me}
+function updateSeriesUI(){
+ const hostName=state.role==='host'?state.me:state.enemy;
+ const guestName=state.role==='host'?state.enemy:state.me;
+ const hostScore=state.role==='host'?state.seriesWins:state.seriesLosses;
+ const guestScore=state.role==='host'?state.seriesLosses:state.seriesWins;
+ const left=hostName||'PLAYER 1',right=guestName||'PLAYER 2';
+ const txt=left+' '+hostScore+' - '+guestScore+' '+right;
+ $('#seriesScore').textContent=hostScore+' - '+guestScore;
+ $('#seriesNote').textContent=txt;
+ $('#seriesLine').textContent=txt;
+}
+function ensureAudio(){try{const ctx=audio.ctx||(audio.ctx=new (window.AudioContext||window.webkitAudioContext)());if(ctx.state==='suspended')ctx.resume();return ctx}catch(e){return null}}
+function noiseBoom(ctx,duration=.55,volume=.18){const rate=ctx.sampleRate,len=Math.floor(rate*duration),buf=ctx.createBuffer(1,len,rate),data=buf.getChannelData(0);for(let i=0;i<len;i++){const env=1-i/len;data[i]=(Math.random()*2-1)*env*env}const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();src.buffer=buf;filter.type='lowpass';filter.frequency.value=700;src.connect(filter);filter.connect(gain);gain.connect(ctx.destination);const now=ctx.currentTime;gain.gain.setValueAtTime(volume,now);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);src.start(now)}
+function audio(type){if(!state.sound)return;const ctx=ensureAudio();if(!ctx)return;try{const now=ctx.currentTime;if(type==='sink'){noiseBoom(ctx,.95,.36);[132,96,62,44].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=i<2?'square':'sawtooth';o.frequency.setValueAtTime(f,now+i*.045);o.frequency.exponentialRampToValueAtTime(Math.max(30,f*.42),now+.7+i*.04);g.gain.setValueAtTime(i<2?.095:.055,now+i*.045);g.gain.exponentialRampToValueAtTime(.0001,now+.78+i*.04);o.connect(g);g.connect(ctx.destination);o.start(now+i*.045);o.stop(now+.82+i*.04)});const crack=ctx.createOscillator(),cg=ctx.createGain();crack.type='square';crack.frequency.setValueAtTime(760,now+.04);crack.frequency.exponentialRampToValueAtTime(120,now+.16);cg.gain.setValueAtTime(.04,now+.04);cg.gain.exponentialRampToValueAtTime(.0001,now+.18);crack.connect(cg);cg.connect(ctx.destination);crack.start(now+.04);crack.stop(now+.2);return}if(type==='hit'){noiseBoom(ctx,.25,.12)}const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);if(type==='launch'){o.type='square';o.frequency.setValueAtTime(180,now);o.frequency.exponentialRampToValueAtTime(720,now+.22)}if(type==='hit'){o.type='square';o.frequency.setValueAtTime(145,now);o.frequency.exponentialRampToValueAtTime(75,now+.18)}if(type==='miss'){o.type='triangle';o.frequency.setValueAtTime(460,now);o.frequency.exponentialRampToValueAtTime(250,now+.14)}if(type==='win'){o.type='square';o.frequency.setValueAtTime(523,now);o.frequency.linearRampToValueAtTime(659,now+.12);o.frequency.linearRampToValueAtTime(784,now+.25)}if(type==='lose'){o.type='sawtooth';o.frequency.setValueAtTime(250,now);o.frequency.linearRampToValueAtTime(95,now+.3)}g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.055,now+.01);g.gain.exponentialRampToValueAtTime(.0001,now+.35);o.start(now);o.stop(now+.36)}catch(e){}}
+function boardBuild(id,mode){const b=$(id);b.innerHTML='';for(let r=-1;r<10;r++)for(let c=-1;c<10;c++){const el=document.createElement(r<0||c<0?'div':'button');if(r<0||c<0){el.className='axis';el.textContent=r<0&&c>=0?letters[c]:c<0&&r>=0?String(r+1):''}else{el.type='button';el.className='cell';el.dataset.r=r;el.dataset.c=c;el.setAttribute('aria-label',letters[c]+(r+1));if(mode==='setup'){el.addEventListener('mouseenter',()=>preview(r,c));el.addEventListener('click',()=>place(r,c))}if(mode==='enemy')el.addEventListener('click',()=>fire(r,c))}b.appendChild(el)}}
+function cell(id,r,c){return $(id).children[(r+1)*11+(c+1)]}
+function candidate(r,c,size,o){const a=[];for(let i=0;i<size;i++){const rr=r+(o==='v'?i:0),cc=c+(o==='h'?i:0);if(rr>9||cc>9)return null;a.push([rr,cc])}return a}
+function canPlace(r,c,size,o){const a=candidate(r,c,size,o);if(!a)return null;const occ=new Set(state.placements.flatMap(p=>p.cells.map(x=>key(...x))));return a.some(x=>occ.has(key(...x)))?null:a}
+function currentPendingShip(){if(state.editingShip)return state.editingShip;const placed=new Set(state.placements.map(p=>p.id));return SHIPS.find(s=>!placed.has(s.id))||null}
+function cloneShipMeta(s){return {id:s.id,name:s.name,size:s.size,type:s.type||''}}
+function findShipAt(r,c){return state.placements.find(p=>p.cells.some(([rr,cc])=>rr===r&&cc===c))||null}
+function shipOrientation(p){return p.cells.length>1&&p.cells[0][0]===p.cells[1][0]?'h':'v'}
+function clearSetupPreview(){document.querySelectorAll('#setupBoard .preview-ok,#setupBoard .preview-bad').forEach(x=>x.classList.remove('preview-ok','preview-bad'))}
+function preview(r,c){if(state.ready)return;const pending=currentPendingShip();if(!pending)return;clearSetupPreview();const all=candidate(r,c,pending.size,state.orientation),ok=canPlace(r,c,pending.size,state.orientation);if(all)all.forEach(([rr,cc])=>{const e=cell('#setupBoard',rr,cc);if(e)e.classList.add(ok?'preview-ok':'preview-bad')})}
+function clearBoardDynamic(boardId){document.querySelectorAll(boardId+' .shipUnit').forEach(x=>x.remove());document.querySelectorAll(boardId+' .cell').forEach(x=>{x.className='cell'})}
+function liftShipAt(r,c){const ship=findShipAt(r,c);if(!ship)return false;state.placements=state.placements.filter(p=>p!==ship);state.editingShip=cloneShipMeta(ship);state.ready=false;renderSetup();toast('PICKED UP '+ship.name+'. CHOOSE A NEW POSITION.');return true}
+function place(r,c){if(state.ready)return;const occupied=findShipAt(r,c);if(occupied && !state.editingShip){liftShipAt(r,c);return}const pending=currentPendingShip();if(!pending){toast('ALL SHIPS DEPLOYED.');return}const a=canPlace(r,c,pending.size,state.orientation);if(!a){toast('INVALID POSITION.');return}state.placements.push({...cloneShipMeta(pending),cells:a,hits:[]});state.editingShip=null;renderSetup();toast('DEPLOYED '+pending.name)}
+function randomize(){if(state.ready)return;state.placements=[];state.editingShip=null;for(const s of SHIPS){let ok=false;for(let tries=0;tries<600&&!ok;tries++){const o=Math.random()<.5?'h':'v',r=Math.floor(Math.random()*10),c=Math.floor(Math.random()*10),a=canPlace(r,c,s.size,o);if(a){state.placements.push({...cloneShipMeta(s),cells:a,hits:[]});ok=true}}}renderSetup();toast('FLEET RANDOMIZED.')}
+function shipSvg(id,size,wreck=false){
+ const W=Math.max(114,size*80),H=54;
+ const dark='#15252d', glow='#ecf8fc', deck='#dbe8ee';
+ const weather=wreck?'#6b3c31':'#42535d';
+ const holes=wreck?`<rect x="${W*.23}" y="20" width="8" height="18" fill="#5a2f27"/><rect x="${W*.67}" y="18" width="10" height="20" fill="#6c3a2f"/>`:'';
+ const windows=(count,start,step,y=28,color=dark)=>Array.from({length:count},(_,i)=>`<rect x="${start+i*step}" y="${y}" width="6" height="5" fill="${color}"/>`).join('');
+ let body='';
+ if(id==='carrier'){
+  body=`<polygon points="0,28 16,17 ${W-20},17 ${W},27 ${W-18},40 16,40" fill="#a2aeb8"/>
+  <rect x="18" y="14" width="${W-44}" height="7" fill="${deck}"/>
+  <rect x="28" y="24" width="${W*0.44}" height="3" fill="#f6e785"/>
+  <rect x="34" y="19" width="${W*0.18}" height="2" fill="#f6e785"/>
+  <rect x="${W*0.62}" y="6" width="26" height="14" fill="#566874"/>
+  <rect x="${W*0.67}" y="1" width="14" height="7" fill="#dce8ed"/>
+  <rect x="${W*0.62+3}" y="10" width="18" height="5" fill="#79e6ff"/>
+  <rect x="40" y="29" width="10" height="4" fill="#48555f"/><rect x="56" y="29" width="10" height="4" fill="#48555f"/><rect x="72" y="29" width="10" height="4" fill="#48555f"/><rect x="88" y="29" width="10" height="4" fill="#48555f"/>`;
+ }else if(id==='battleship'){
+  body=`<polygon points="0,28 15,17 ${W-16},17 ${W},27 ${W-16},40 15,40" fill="#93a3ae"/>
+  <polygon points="18,19 ${W-22},19 ${W-30},24 24,24" fill="#d8e8ef"/>
+  <rect x="${W*.42}" y="8" width="28" height="11" fill="#4f6571"/>
+  <rect x="${W*.47}" y="3" width="11" height="6" fill="#dce8ed"/>
+  <rect x="30" y="11" width="14" height="8" fill="#7b8f9a"/><rect x="34" y="5" width="4" height="8" fill="${dark}"/><rect x="40" y="7" width="9" height="3" fill="${dark}"/>
+  <rect x="${W-52}" y="11" width="14" height="8" fill="#7b8f9a"/><rect x="${W-48}" y="5" width="4" height="8" fill="${dark}"/><rect x="${W-42}" y="7" width="9" height="3" fill="${dark}"/>
+  ${windows(4,36,24,29)}`;
+ }else if(id==='cruiser'){
+  body=`<polygon points="0,28 18,17 ${W-18},18 ${W},27 ${W-20},39 14,39" fill="#7d95a0"/>
+  <rect x="22" y="18" width="${W-46}" height="4" fill="#d1e1e7"/>
+  <rect x="${W*.38}" y="9" width="25" height="10" fill="#41606b"/>
+  <rect x="${W*.44}" y="4" width="10" height="6" fill="#c1dce3"/>
+  <rect x="28" y="11" width="11" height="7" fill="#57717e"/><rect x="${W-45}" y="11" width="11" height="7" fill="#57717e"/>
+  <rect x="44" y="24" width="18" height="3" fill="#efb95b"/>
+  ${windows(3,36,23,29)}`;
+ }else if(id==='submarine'){
+  body=`<ellipse cx="${W/2}" cy="29" rx="${W/2-3}" ry="12" fill="#526971"/>
+  <rect x="${W*.43}" y="11" width="26" height="15" fill="#395059"/>
+  <rect x="${W*.50}" y="4" width="4" height="9" fill="#cae5ea"/>
+  <rect x="${W*.50}" y="4" width="16" height="3" fill="#cae5ea"/>
+  <rect x="${W*.23}" y="26" width="${W*.54}" height="3" fill="#94a8ae"/>
+  <rect x="16" y="27" width="11" height="4" fill="#253a40"/><rect x="${W-27}" y="27" width="11" height="4" fill="#253a40"/>
+  <rect x="${W*.43+5}" y="16" width="16" height="5" fill="#80eaff"/>`;
+ }else{
+  body=`<polygon points="0,28 19,17 ${W-15},18 ${W},27 ${W-20},39 14,39" fill="#6f8892"/>
+  <rect x="22" y="18" width="${W-48}" height="4" fill="#d3e1e6"/>
+  <rect x="${W*.42}" y="9" width="20" height="10" fill="#364f59"/>
+  <rect x="${W*.47}" y="4" width="8" height="6" fill="#cae5ea"/>
+  <rect x="28" y="12" width="9" height="6" fill="#4f6974"/>
+  <polygon points="${W-10},27 ${W},22 ${W},32" fill="#b44d49"/>
+  ${windows(2,38,24,29)}`;
+ }
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" shape-rendering="crispEdges" preserveAspectRatio="none"><rect x="11" y="42" width="${W-22}" height="5" fill="rgba(0,0,0,.22)"/>${body}<rect x="16" y="38" width="${W-32}" height="3" fill="${weather}"/><rect x="18" y="18" width="${W-36}" height="1" fill="#ffffff66"/>${holes}</svg>`;
+}
+function shipPreviewSvg(s){return shipSvg(s.id,s.size,false)}
+function addShipUnit(boardId,p,{wreck=false,burning=false}={}){p.cells.forEach(([r,c])=>{const e=cell(boardId,r,c);if(e)e.classList.add('ship')});const board=$(boardId);const first=cell(boardId,p.cells[0][0],p.cells[0][1]);const last=cell(boardId,p.cells[p.cells.length-1][0],p.cells[p.cells.length-1][1]);if(!board||!first||!last)return;const left=Math.min(first.offsetLeft,last.offsetLeft),top=Math.min(first.offsetTop,last.offsetTop),width=Math.abs(last.offsetLeft-first.offsetLeft)+first.offsetWidth,height=Math.abs(last.offsetTop-first.offsetTop)+first.offsetHeight;const unit=document.createElement('div');const o=shipOrientation(p);unit.className='shipUnit '+o+' ship-size-'+p.size+(wreck?' wreck':'');unit.style.left=(left+2)+'px';unit.style.top=(top+2)+'px';unit.style.width=(width-4)+'px';unit.style.height=(height-4)+'px';if(o==='v'){unit.innerHTML=`<svg class="shipSilhouette" width="100%" height="100%"></svg>`;unit.style.transform='rotate(90deg)';unit.style.transformOrigin='center';unit.style.left=(left+2)+'px';unit.style.top=(top+2)+'px';unit.style.width=(height-4)+'px';unit.style.height=(width-4)+'px';const cx=(left+width/2)-((height-4)/2),cy=(top+height/2)-((width-4)/2);unit.style.left=cx+'px';unit.style.top=cy+'px'}unit.innerHTML=shipSvg(p.id||'cruiser',p.size,wreck);if(burning){['f1','f2','f3'].forEach(cls=>{const f=document.createElement('span');f.className='flame '+cls;unit.appendChild(f)});p.cells.forEach(([r,c])=>{const e=cell(boardId,r,c);if(e)e.classList.add('burning-cell')})}board.appendChild(unit)}
+function renderSetup(){clearSetupPreview();clearBoardDynamic('#setupBoard');state.placements.forEach(p=>addShipUnit('#setupBoard',p));const pending=currentPendingShip();$('#orientation').textContent='ORIENTATION: '+(state.orientation==='h'?'HORIZONTAL':'VERTICAL');$('#readyLabel').textContent=state.ready?'READY':'NOT READY';$('#shipList').innerHTML='';const placedIds=new Set(state.placements.map(p=>p.id));SHIPS.forEach(s=>{const done=placedIds.has(s.id);const active=!done&&pending&&pending.id===s.id;const d=document.createElement('div');d.className='shipitem'+(done?' done':'')+(active?' active':'');d.innerHTML='<div class="shipPreview">'+shipPreviewSvg(s)+'</div><div class="shiphead"><b>'+s.name+'</b><span>'+s.size+' CELLS</span></div><div class="shipTypeTag">'+(s.type||'')+'</div><div class="blocks">'+Array(s.size).fill('<i></i>').join('')+'</div>';$('#shipList').appendChild(d)});$('#readyBtn').disabled=state.placements.length!==SHIPS.length||state.ready||!!state.editingShip;$('#setupMsg').textContent=state.ready?'YOU ARE READY. WAITING FOR OPPONENT…':state.editingShip?'REPOSITIONING: '+state.editingShip.name+' — CHOOSE A NEW POSITION.':pending?'DEPLOYING: '+pending.name:'ALL SHIPS DEPLOYED. PRESS READY.';$('#setupBoard').onmouseleave=clearSetupPreview}
+function roomUI(){ $('#roomCode').textContent=state.room;show($('#roomBox'),true);const u=new URL(location.href);u.searchParams.set('room',state.room);u.searchParams.set('join','1');$('#shareLink').value=u.toString() }
+function topicFor(room){return 'bship_v3/room/'+room}
+function sendMsg(d){if(!state.client||!state.client.isConnected())return;try{const p=JSON.stringify({...d,sender:state.myId}),m=new Paho.MQTT.Message(p);m.destinationName=topicFor(state.room);m.qos=1;state.client.send(m)}catch(e){console.error('sendMsg error:',e)}}
+function cleanup(){if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null}if(joinTimer){clearTimeout(joinTimer);joinTimer=null}if(state.client){try{state.client.disconnect()}catch(e){}state.client=null}state.connected=false}
+function connectMQTT(onSuccess){cleanup();const cid='bs_'+(state.role||'p')+'_'+Math.random().toString(36).slice(2,10),c=new Paho.MQTT.Client('broker.emqx.io',8084,'/mqtt',cid);state.client=c;c.onConnectionLost=resp=>{console.warn('MQTT lost:',resp.errorMessage);if(resp.errorCode!==0){setNet('DISCONNECTED');setTimeout(()=>{if(state.client&&!state.client.isConnected()){try{c.connect({useSSL:true,timeout:6,keepAliveInterval:30,cleanSession:true,onSuccess:()=>{setNet(state.connected?'CONNECTED':'WAITING');c.subscribe(topicFor(state.room))}})}catch(e){}}},1800)}};c.onMessageArrived=msg=>{try{const d=JSON.parse(msg.payloadString);if(!d||d.sender===state.myId)return;onData(d)}catch(e){console.error('parse error:',e)}};c.connect({useSSL:true,timeout:8,keepAliveInterval:30,cleanSession:true,onSuccess:()=>{c.subscribe(topicFor(state.room),{onSuccess:()=>{onSuccess&&onSuccess()}})},onFailure:err=>{console.error('Connect failed:',err);setNet('CONNECTION ERROR');$('#lobbyMsg').textContent='ONLINE SERVER CONNECTION FAILED. CHECK YOUR INTERNET AND TRY AGAIN.';toast('SERVER CONNECTION ERROR.')}})}
+function host(){nameNow();state.role='host';state.room=code();setNet('CREATING…');$('#lobbyMsg').textContent='CONNECTING TO ONLINE SERVER…';connectMQTT(()=>{setNet('WAITING FOR OPPONENT');roomUI();$('#lobbyMsg').textContent='ROOM '+state.room+' IS READY. SHARE THE INVITE LINK.';toast('ROOM CREATED: '+state.room);if(heartbeatTimer)clearInterval(heartbeatTimer);heartbeatTimer=setInterval(()=>{if(!state.connected)sendMsg({type:'host_ping',name:state.me});else{clearInterval(heartbeatTimer);heartbeatTimer=null}},1800)})}
+function join(){nameNow();const c=$('#roomInput').value.trim().toUpperCase();if(c.length<4){toast('ENTER A VALID ROOM CODE.');return}state.role='guest';state.room=c;roomUI();setNet('JOINING ROOM…');$('#lobbyMsg').textContent='CONNECTING TO ROOM '+c+'…';if(joinTimer)clearTimeout(joinTimer);joinTimer=setTimeout(()=>{if(!state.connected){$('#lobbyMsg').textContent='ROOM HOST NOT FOUND. MAKE SURE THE HOST IS ONLINE.';toast('ROOM NOT FOUND.')}},10000);connectMQTT(()=>{setNet('JOINING ROOM…');$('#lobbyMsg').textContent='ROOM FOUND. CONNECTING TO OPPONENT…';sendMsg({type:'guest_join',name:state.me})})}
+function ready(){if(state.placements.length!==SHIPS.length||state.editingShip)return;state.ready=true;renderSetup();sendMsg({type:'ready'});maybeStart()}
+function maybeStart(){if(!(state.ready&&state.enemyReady)||state.started)return;state.started=true;state.myTurn=state.role==='host';state.bonusShot=false;show($('#setup'),false);show($('#game'),true);renderBoards();status();toast('BATTLE START!')}
+function clearBattleBoard(boardId){document.querySelectorAll(boardId+' .shipUnit').forEach(x=>x.remove());document.querySelectorAll(boardId+' .cell').forEach(x=>x.className='cell')}
+function renderBoards(){boardBuild('#myBoard','my');boardBuild('#enemyBoard','enemy');renderShots();stats();updateSeriesUI()}
+function stats(){const mySunk=state.placements.filter(p=>p.hits.length===p.size).length;const enemySunk=Object.keys(state.enemySunkShips).length;$('#myRemain').textContent=5-mySunk;$('#enemyRemain').textContent=5-enemySunk;const shots=Object.keys(state.myShots).length,hits=Object.values(state.myShots).filter(x=>x.hit).length;$('#accuracy').textContent=shots?Math.round(hits/shots*100)+'%':'0%';$('#turnCount').textContent=state.turnCount}
+function addHitPartMark(e,segment){
+ if(!e||!segment||segment==='mid'||e.querySelector('.hitPartMark'))return;
+ const m=document.createElement('span');
+ m.className='hitPartMark '+(segment==='stern'?'stern':'bow');
+ m.textContent=segment==='stern'?'S':'B';
+ m.title=segment==='stern'?'STERN HIT':'BOW HIT';
+ e.appendChild(m);
+ e.classList.add(segment==='stern'?'hit-stern':'hit-bow');
+}
+function addMissFlag(e){
+ if(!e||e.querySelector('.missFlag'))return;
+ const f=document.createElement('span');f.className='missFlag';f.title='MISS';e.appendChild(f);
+}
+function renderShots(){
+ clearBattleBoard('#myBoard');clearBattleBoard('#enemyBoard');
+ state.placements.forEach(p=>addShipUnit('#myBoard',p,{wreck:p.hits.length===p.size,burning:p.hits.length===p.size}));
+ Object.values(state.enemySunkShips).forEach(p=>addShipUnit('#enemyBoard',p,{wreck:true,burning:true}));
+ Object.entries(state.enemyShots).forEach(([k,v])=>{
+  const [r,c]=k.split('-').map(Number),e=cell('#myBoard',r,c);
+  if(e){e.classList.add(v.hit?'hit':'miss');if(v.sunk)e.classList.add('sunk');if(v.hit)addHitPartMark(e,v.segment);if(!v.hit&&v.flagged)addMissFlag(e)}
+ });
+ Object.entries(state.myShots).forEach(([k,v])=>{
+  const [r,c]=k.split('-').map(Number),e=cell('#enemyBoard',r,c);
+  if(e){e.classList.add(v.hit?'hit':'miss');if(v.sunk)e.classList.add('sunk');if(v.hit)addHitPartMark(e,v.segment);if(!v.hit&&v.flagged)addMissFlag(e)}
+ });
+ document.querySelectorAll('#enemyBoard .cell').forEach(e=>{
+  const k=key(+e.dataset.r,+e.dataset.c);
+  e.disabled=state.over||!state.myTurn||!!state.myShots[k];
+  e.classList.toggle('targetable',!e.disabled)
+ })
+}
+function status(){if(state.over)return;$('#turnText').textContent=state.myTurn?(state.bonusShot?'🔥 HIT! FIRE AGAIN':'🎯 YOUR TURN'):'⏳ TURN: '+state.enemy;$('#gameMsg').textContent=state.myTurn?(state.bonusShot?'Direct hit — you get another shot.':'Select a target cell in enemy waters.'):'Opponent is aiming…';renderShots()}
+function centerOf(el){const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}}
+function spawnImpactAt(el,hit,delay=0){if(!el)return;setTimeout(()=>{const t=centerOf(el),fx=$('#fx'),b=document.createElement('div');b.className=hit?'pixelExplosion':'pixelSplash';b.style.left=t.x+'px';b.style.top=t.y+'px';fx.appendChild(b);if(!hit){const r=document.createElement('div');r.className='pixelRipple';r.style.left=t.x+'px';r.style.top=t.y+'px';fx.appendChild(r);setTimeout(()=>r.remove(),650)}setTimeout(()=>b.remove(),650)},delay)}
+function missileFx(target,hit,done){const fx=$('#fx'),t=centerOf(target),startX=Math.max(8,t.x-150),startY=Math.max(8,t.y-190),m=document.createElement('div');m.className='pixelMissile';m.style.left=startX+'px';m.style.top=startY+'px';fx.appendChild(m);audio('launch');const dx=t.x-startX,dy=t.y-startY;m.animate([{transform:'translate(0,0) rotate(135deg)'},{transform:'translate('+dx+'px,'+dy+'px) rotate(135deg)'}],{duration:360,easing:'steps(9,end)'}).onfinish=()=>{m.remove();spawnImpactAt(target,hit);audio(hit?'hit':'miss');if(hit){$('#app').classList.add('shake');setTimeout(()=>$('#app').classList.remove('shake'),320);if(navigator.vibrate)try{navigator.vibrate([45,30,65])}catch(e){}}if(done)setTimeout(done,hit?150:760)}}
+function partHitFx(target,segment){
+ if(!target||!segment||segment==='mid')return;
+ const t=centerOf(target),d=document.createElement('div');
+ d.className='partHitFx '+(segment==='stern'?'stern':'bow');
+ d.textContent=segment==='stern'?'STERN HIT':'BOW HIT';
+ d.style.left=t.x+'px';d.style.top=t.y+'px';document.body.appendChild(d);
+ setTimeout(()=>d.remove(),900);
+}
+function sunkFx(boardId,cells,name,mode){const picks=cells.length<=2?cells:[cells[0],cells[Math.floor(cells.length/2)],cells[cells.length-1]];picks.forEach(([r,c],i)=>spawnImpactAt(cell(boardId,r,c),true,i*120));const banner=document.createElement('div');
+ banner.className='sunkFlash '+(mode==='own'?'ownSunk':'enemySunk');
+ banner.innerHTML=mode==='own'
+   ?'💥 YOUR SHIP WAS SUNK<br><span style="font-size:.72em;color:#fff">'+name+'</span>'
+   :'🔥 ENEMY SHIP DESTROYED<br><span style="font-size:.72em;color:#fff">'+name+'</span>';
+ document.body.appendChild(banner);setTimeout(()=>banner.remove(),1650);audio('sink');if(navigator.vibrate)try{navigator.vibrate([90,35,120,35,170])}catch(e){}}
+function fire(r,c){const k=key(r,c);if(!state.started||state.over||!state.myTurn||state.myShots[k]||!state.connected)return;state.myTurn=false;state.bonusShot=false;status();sendMsg({type:'shot',r,c})}
+function incoming(r,c){
+ if(state.over)return;
+ const k=key(r,c);if(state.enemyShots[k])return;
+ let hit=false,sunk=false,shipName=null,shipCells=null,shipSize=null,segment=null,orientation=null;
+ const ship=state.placements.find(p=>p.cells.some(([rr,cc])=>rr===r&&cc===c));
+ if(ship){
+  hit=true;shipName=ship.name;orientation=shipOrientation(ship);
+  const idx=ship.cells.findIndex(([rr,cc])=>rr===r&&cc===c);
+  segment=idx===0?'bow':idx===ship.cells.length-1?'stern':'mid';
+  if(!ship.hits.some(([rr,cc])=>rr===r&&cc===c))ship.hits.push([r,c]);
+  sunk=ship.hits.length===ship.size;
+  if(sunk){shipCells=ship.cells;shipSize=ship.size}
+ }
+ state.enemyShots[k]={hit,sunk,shipName,segment,orientation,flagged:false};
+ renderShots();
+ const win=state.placements.filter(p=>p.hits.length===p.size).length===5;
+ sendMsg({type:'shotResult',r,c,hit,sunk,shipName,shipCells,shipSize,segment,orientation,win,continueTurn:hit&&!win});
+ stats();
+ missileFx(cell('#myBoard',r,c),hit,()=>{
+  if(hit)partHitFx(cell('#myBoard',r,c),segment);
+  if(sunk)sunkFx('#myBoard',ship.cells,shipName,'own');
+  if(!hit){state.enemyShots[k].flagged=true;renderShots()}
+ });
+ if(win){setTimeout(()=>end(false),sunk?1450:600);return}
+ if(hit){state.myTurn=false;state.bonusShot=false;setTimeout(status,sunk?1500:520)}
+ else{state.myTurn=true;state.bonusShot=false;setTimeout(status,520)}
+}
+function result(d){
+ const k=key(d.r,d.c);
+ state.myShots[k]={hit:d.hit,sunk:d.sunk,shipName:d.shipName,segment:d.segment||'mid',orientation:d.orientation||null,flagged:false};
+ state.turnCount++;
+ if(d.sunk&&d.shipCells){state.enemySunkShips[d.shipName]={name:d.shipName,size:d.shipSize||d.shipCells.length,cells:d.shipCells,hits:d.shipCells.slice(),id:null}}
+ renderShots();stats();
+ missileFx(cell('#enemyBoard',d.r,d.c),d.hit,()=>{
+  if(d.hit)partHitFx(cell('#enemyBoard',d.r,d.c),d.segment||'mid');
+  if(d.sunk&&d.shipCells)sunkFx('#enemyBoard',d.shipCells,d.shipName,'enemy');
+  if(!d.hit){state.myShots[k].flagged=true;renderShots()}
+ });
+ if(d.hit)toast(d.sunk?'ENEMY '+d.shipName.toUpperCase()+' DESTROYED!':'HIT! FIRE AGAIN.');
+ else toast('MISS — TURN CHANGES.');
+ if(d.win){setTimeout(()=>end(true),d.sunk?1450:600);return}
+ if(d.hit){state.myTurn=true;state.bonusShot=true;setTimeout(status,d.sunk?1500:520)}
+ else{state.myTurn=false;state.bonusShot=false;setTimeout(status,520)}
+}
+function end(win){
+ state.over=true;
+ if(win)state.seriesWins++;else state.seriesLosses++;
+ updateSeriesUI();renderShots();show($('#resultModal'),true);
+ $('#resultIcon').textContent=win?'🏆':'💥';
+ $('#resultTitle').textContent=win?'VICTORY':'DEFEAT';
+ $('#resultSub').textContent=win
+   ?'You destroyed the entire fleet of '+state.enemy+'.'
+   :'Your entire fleet was destroyed by '+state.enemy+'.';
+ audio(win?'win':'lose')
+}
+function reset(send=true){state.orientation='h';state.placements=[];state.editingShip=null;state.ready=false;state.enemyReady=false;state.started=false;state.myTurn=false;state.myShots={};state.enemyShots={};state.enemySunkShips={};state.over=false;state.turnCount=0;state.bonusShot=false;show($('#resultModal'),false);show($('#game'),false);show($('#setup'),true);boardBuild('#setupBoard','setup');renderSetup();if(send)sendMsg({type:'rematch'});toast('NEW ROUND. '+(state.role==='host'?state.me:state.enemy)+' '+(state.role==='host'?state.seriesWins:state.seriesLosses)+' - '+(state.role==='host'?state.seriesLosses:state.seriesWins)+' '+(state.role==='host'?state.enemy:state.me))}
+function onData(d){if(!d||!d.type)return;if(d.type==='guest_join'&&state.role==='host'){state.enemy=d.name||'OPPONENT';$('#enemyName').textContent=state.enemy;sendMsg({type:'host_accept',name:state.me});if(!state.connected){state.connected=true;if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null}setNet('CONNECTED');show($('#setup'),true);$('#lobbyMsg').textContent=state.enemy+' JOINED THE ROOM. DEPLOY YOUR FLEET.';toast(state.enemy+' JOINED THE ROOM.')}}if(d.type==='host_accept'&&state.role==='guest'){state.enemy=d.name||'OPPONENT';$('#enemyName').textContent=state.enemy;if(!state.connected){if(joinTimer){clearTimeout(joinTimer);joinTimer=null}state.connected=true;setNet('CONNECTED');show($('#setup'),true);$('#lobbyMsg').textContent='CONNECTED TO '+state.enemy+'! DEPLOY YOUR FLEET.';toast('CONNECTED TO '+state.enemy);sendMsg({type:'guest_ack',name:state.me})}}if(d.type==='host_ping'&&state.role==='guest'&&!state.connected)sendMsg({type:'guest_join',name:state.me});if(d.type==='guest_ack'&&state.role==='host'){state.enemy=d.name||state.enemy;$('#enemyName').textContent=state.enemy}if(d.type==='ready'){state.enemyReady=true;$('#setupMsg').textContent=state.ready?'BOTH PLAYERS READY.':(state.enemy+' IS READY. FINISH DEPLOYING YOUR FLEET.');toast(state.enemy+' IS READY.');maybeStart()}if(d.type==='shot')incoming(+d.r,+d.c);if(d.type==='shotResult')result(d);if(d.type==='rematch'){reset(false);toast(state.enemy+' REQUESTED A REMATCH.')}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.client&&!state.client.isConnected()){try{state.client.connect({useSSL:true,timeout:6,keepAliveInterval:30,cleanSession:true,onSuccess:()=>{setNet(state.connected?'CONNECTED':'WAITING');state.client.subscribe(topicFor(state.room))}})}catch(e){}}});
+$('#createBtn').addEventListener('click',host);$('#joinBtn').addEventListener('click',join);$('#playerName').addEventListener('input',nameNow);
+$('#roomInput').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''));
+$('#rotateBtn').addEventListener('click',()=>{state.orientation=state.orientation==='h'?'v':'h';renderSetup()});$('#randomBtn').addEventListener('click',randomize);
+$('#clearBtn').addEventListener('click',()=>{if(!state.ready){state.placements=[];state.editingShip=null;renderSetup();toast('FLEET CLEARED.')}});$('#readyBtn').addEventListener('click',ready);
+$('#rematchBtn').addEventListener('click',()=>reset(true));$('#closeResultBtn').addEventListener('click',()=>show($('#resultModal'),false));
+$('#soundBtn').addEventListener('click',()=>{state.sound=!state.sound;$('#soundBtn').textContent=state.sound?'🔊 SOUND':'🔇 SOUND OFF';toast(state.sound?'SOUND ON.':'SOUND OFF.')});
+$('#copyBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('#shareLink').value);toast('INVITE LINK COPIED.')}catch(e){$('#shareLink').select();document.execCommand('copy');toast('INVITE LINK COPIED.')}});
+boardBuild('#setupBoard','setup');renderSetup();nameNow();updateSeriesUI();
+const p=new URLSearchParams(location.search),r=p.get('room');if(r){$('#roomInput').value=r.toUpperCase();state.room=r.toUpperCase();roomUI();$('#lobbyMsg').textContent='YOU WERE INVITED TO ROOM '+r.toUpperCase()+'. ENTER YOUR NAME, THEN PRESS JOIN ROOM.'}
+})();
+</script>
+</body>
+</html>
